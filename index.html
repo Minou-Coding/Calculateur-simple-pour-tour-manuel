@@ -1,52 +1,74 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculateur Tour</title>
-<style>
-body{background:#05070b;color:#fff;font-family:sans-serif;margin:0;padding:20px}
-input,button,select{width:100%;padding:10px;margin-top:8px;background:#111;border:1px solid #333;color:#fff;border-radius:8px}
-button{cursor:pointer}
-.row{margin-bottom:15px}
-#result{font-size:22px;margin-top:20px}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Calculateur tour manuel</title>
+  <style>
+    :root{
+      --bg:#05070b;--card:#0d1320;--card2:#111a2b;--line:rgba(255,255,255,.12);
+      --text:#eef5ff;--muted:#8ea0b8;--blue:#38bdf8;--green:#34d399;--yellow:#facc15;
+      --orange:#fb923c;--red:#fb7185;--purple:#c084fc;--shadow:0 22px 70px rgba(0,0,0,.45);
+      --mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      --sans:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;color:var(--text);font-family:var(--sans);background:radial-gradient(circle at top left,rgba(56,189,248,.18),transparent 35%),radial-gradient(circle at bottom right,rgba(52,211,153,.12),transparent 35%),linear-gradient(145deg,#04060a,#08101c 55%,#030407)}
+    button,input,select{font:inherit}
+    .app{width:min(1180px,calc(100% - 24px));margin:auto;padding:22px 0 40px}
+    .top{padding:clamp(18px,4vw,34px);border:1px solid var(--line);border-radius:30px;background:linear-gradient(135deg,rgba(17,26,43,.96),rgba(8,13,24,.9));box-shadow:var(--shadow);margin-bottom:16px}
+    h1{margin:0;font-size:clamp(30px,7vw,64px);line-height:.95;letter-spacing:-.06em}
+    .top p{margin:14px 0 0;max-width:850px;color:var(--muted);line-height:1.55;font-size:clamp(14px,2.8vw,17px)}
+    .grid{display:grid;grid-template-columns:390px 1fr;gap:16px;align-items:start}
+    .card{border:1px solid var(--line);border-radius:22px;background:rgba(13,19,32,.92);box-shadow:var(--shadow);overflow:hidden}
+    .card-head{padding:17px 18px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.025);display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    .card-head h2{margin:0;font-size:17px}.card-body{padding:18px}.form{display:grid;gap:14px}
+    label{display:grid;gap:8px;color:#cbd9ea;font-size:13px;font-weight:800}.help{color:var(--muted);font-size:12px;font-weight:600}
+    input,select{width:100%;min-height:52px;border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:12px 14px;outline:none;background:rgba(2,6,23,.72);color:var(--text);font-size:18px;font-family:var(--mono)}
+    input:focus,select:focus{border-color:rgba(56,189,248,.85);box-shadow:0 0 0 4px rgba(56,189,248,.13)}
+    .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    button{min-height:48px;border:1px solid rgba(255,255,255,.12);border-radius:15px;cursor:pointer;font-weight:900;color:var(--text);background:#172236;padding:8px 12px}
+    button:active{transform:scale(.985)}.primary{color:#001018;border:0;background:linear-gradient(135deg,#67e8f9,#38bdf8 48%,#34d399)}.danger{background:rgba(127,29,29,.55);color:#ffe4e6}.ghost{background:rgba(255,255,255,.055)}
+    .result{padding:clamp(18px,4vw,28px);border:1px solid rgba(56,189,248,.28);border-radius:26px;background:radial-gradient(circle at top right,rgba(56,189,248,.18),transparent 36%),linear-gradient(145deg,rgba(8,47,73,.48),rgba(13,19,32,.9));margin-bottom:16px}
+    .status{display:inline-flex;align-items:center;padding:8px 12px;border-radius:999px;font-size:13px;font-weight:900;background:rgba(255,255,255,.08);color:var(--muted);margin-bottom:16px}.status.ok{background:rgba(52,211,153,.16);color:#bbf7d0}.status.warn{background:rgba(251,146,60,.16);color:#fed7aa}.status.bad{background:rgba(251,113,133,.16);color:#fecdd3}
+    .big-label{color:#bae6fd;font-size:13px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.split-number{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}.unit-box{min-width:120px;flex:1;padding:14px;border-radius:18px;background:rgba(2,6,23,.42);border:1px solid rgba(255,255,255,.1)}.unit-box small{display:block;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.unit-box strong{display:block;font-family:var(--mono);font-size:clamp(28px,6vw,48px);letter-spacing:-.07em;line-height:.95}.mm strong{color:var(--blue)}.dixieme strong{color:var(--green)}.centieme strong{color:var(--yellow)}.micron strong{color:var(--purple)}.explain{margin:0;color:var(--muted);line-height:1.55;font-size:15px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.mini{padding:15px;border-radius:18px;border:1px solid var(--line);background:rgba(17,26,43,.84)}.mini span{display:block;color:var(--muted);font-size:11px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.mini strong{display:block;font-family:var(--mono);font-size:22px;letter-spacing:-.05em}.history{display:grid;gap:10px}.line{display:grid;grid-template-columns:90px 1fr auto auto;gap:12px;align-items:center;padding:13px;border-radius:16px;border:1px solid var(--line);background:rgba(2,6,23,.35)}.line time{color:var(--muted);font-family:var(--mono);font-size:12px}.line strong{font-family:var(--mono);font-size:16px}.line p{margin:4px 0 0;color:var(--muted);font-size:12px;line-height:1.35}.tag{padding:7px 10px;border-radius:999px;font-size:12px;font-weight:900;white-space:nowrap;background:rgba(255,255,255,.08)}.tag.ok{color:#bbf7d0;background:rgba(52,211,153,.15)}.tag.warn{color:#fed7aa;background:rgba(251,146,60,.15)}.tag.bad{color:#fecdd3;background:rgba(251,113,133,.15)}.edit-pass{min-height:34px;padding:6px 10px;border-radius:11px;font-size:12px;background:rgba(56,189,248,.12);color:#bae6fd;border:1px solid rgba(56,189,248,.25)}.empty{color:var(--muted);padding:14px;border:1px dashed rgba(255,255,255,.13);border-radius:16px;text-align:center}.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(12px);padding:12px 15px;border-radius:15px;background:rgba(6,78,59,.92);color:#dcfce7;border:1px solid rgba(52,211,153,.3);opacity:0;pointer-events:none;transition:.18s ease;box-shadow:var(--shadow);width:max-content;max-width:calc(100% - 24px);z-index:10}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:950px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.app{width:calc(100% - 14px);padding-top:8px}.top{border-radius:22px}.card-head{flex-direction:column;align-items:stretch}.btns{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.unit-box{min-width:calc(50% - 5px);padding:12px}.line{grid-template-columns:1fr;align-items:start}input,select{font-size:16px}}
+  </style>
 </head>
 <body>
-<h2>Calculateur Tour</h2>
-
-<div class="row">
-<label>Brut (mm)</label>
-<input id="raw">
-</div>
-
-<div class="row">
-<label>Mini</label>
-<input id="mini">
-</div>
-
-<div class="row">
-<label>Maxi</label>
-<input id="maxi">
-</div>
-
-<div class="row">
-<label>Finition (mm)</label>
-<input id="finish" value="0.500">
-</div>
-
-<div class="row">
-<label>Matière retirée</label>
-<input id="remove">
-<button onclick="addPass()">Valider</button>
-</div>
-
-<button onclick="login()" id="loginBtn">Connexion Google</button>
-
-<div id="result"></div>
+  <main class="app">
+    <section class="top">
+      <h1>Calculateur simple pour tour manuel</h1>
+      <p>Entre la mesure du brut, la cote mini et la cote maxi. La cote moyenne est calculée automatiquement. À chaque passe, indique la matière retirée : l’outil met à jour la cote actuelle, le reste à retirer, la finition à garder et sauvegarde tout localement + sur Google si tu es connecté.</p>
+    </section>
+    <section class="grid">
+      <aside class="card">
+        <div class="card-head"><h2>Réglage de la pièce</h2><button class="ghost" id="googleLogin">Connexion Google</button><button class="ghost" id="resetPiece">Nouvelle pièce</button></div>
+        <div class="card-body"><div class="form">
+          <label>Mesure du brut avant usinage en mm<span class="help">Exemple : 60.000. C’est la vraie cote de départ du calcul.</span><input id="raw" inputmode="decimal" placeholder="60.000"></label>
+          <label>Type de cote<span class="help">Sélectionne le type de mesure.</span><select id="measureType"><option value="diametre">Diamètre extérieur</option><option value="alesage">Alésage / intérieur</option><option value="longueur">Longueur / épaulement</option><option value="autre">Autre cote</option></select></label>
+          <label>Cote nominale / repère en mm<span class="help">Optionnel. Le calcul part du brut, pas de cette valeur.</span><input id="base" inputmode="decimal" placeholder="52.000"></label>
+          <label>Cote mini en mm<span class="help">Exemple : 52.040</span><input id="mini" inputmode="decimal" placeholder="52.040"></label>
+          <label>Cote maxi en mm<span class="help">Exemple : 52.100</span><input id="maxi" inputmode="decimal" placeholder="52.100"></label>
+          <label>Surépaisseur de finition à laisser en mm<span class="help">Par défaut : 0.500 mm. Cette valeur reste pour la finition.</span><input id="finishAllowance" inputmode="decimal" value="0.500"></label>
+          <label>Matière retirée sur cette passe en mm<span class="help">Exemple : 1.235 = 1 mm + 2 dixièmes + 3 centièmes + 5 microns</span><input id="removed" inputmode="decimal" placeholder="0.000"></label>
+          <div class="btns"><button class="primary" id="validatePass">Valider la passe</button><button id="undoPass">Annuler dernière passe</button><button id="copyResult">Copier résultat</button><button class="danger" id="clearAll">Tout effacer</button></div>
+        </div></div>
+      </aside>
+      <section>
+        <div class="result"><div id="status" class="status">En attente des cotes</div><div class="big-label">À retirer maintenant avant finition</div><div class="split-number" id="remainingSplit"></div><p class="explain" id="explain">Renseigne la mesure du brut, la cote mini et la cote maxi.</p></div>
+        <div class="stats">
+          <div class="mini"><span>Type</span><strong id="typeLabel">—</strong></div><div class="mini"><span>Brut départ</span><strong id="rawStart">—</strong></div><div class="mini"><span>Cote moyenne</span><strong id="average">—</strong></div><div class="mini"><span>Cote actuelle</span><strong id="current">—</strong></div>
+          <div class="mini"><span>Total retiré</span><strong id="totalRemoved">—</strong></div><div class="mini"><span>Avant finition</span><strong id="roughRemaining">—</strong></div><div class="mini"><span>Finition gardée</span><strong id="finishKept">—</strong></div><div class="mini"><span>Tolérance</span><strong id="tolerance">—</strong></div>
+        </div>
+        <div class="card"><div class="card-head"><h2>Historique</h2><span class="help" id="syncStatus">Local uniquement</span></div><div class="card-body"><div class="history" id="history"></div></div></div>
+      </section>
+    </section>
+  </main>
+  <div class="toast" id="toast"></div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
@@ -63,86 +85,45 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const $=id=>document.getElementById(id);
+const STORAGE='tour-simple-auto-v5';
+let currentUser=null;
+let cloudLoading=false;
+let saveTimer=null;
+const state={raw:'',measureType:'diametre',base:'',mini:'',maxi:'',finishAllowance:'0.500',totalRemovedUm:0,passes:[]};
 
-let user = null;
-let totalRemoved = 0;
+function parseMm(v){const s=String(v??'').trim().replace(/\s/g,'').replace(',','.');if(!s)return null;const n=Number(s);return Number.isFinite(n)?n:null}
+function mmToUm(mm){return Math.round(mm*1000)}
+function fmtMm(um){if(um===null||um===undefined||!Number.isFinite(um))return '—';return `${(um/1000).toFixed(3)} mm`}
+function splitUm(absUm){absUm=Math.max(0,Math.round(absUm));const mm=Math.floor(absUm/1000);let rest=absUm%1000;const dixiemes=Math.floor(rest/100);rest%=100;const centiemes=Math.floor(rest/10);const microns=rest%10;return{mm,dixiemes,centiemes,microns}}
+function typeText(v){return{diametre:'Ø ext.',alesage:'Alésage',longueur:'Longueur',autre:'Autre'}[v]||'—'}
+function renderSplit(container,valueUm){const negative=valueUm<0;const s=splitUm(Math.abs(valueUm||0));const sign=negative?'-':'';container.innerHTML=`<div class="unit-box mm"><small>Millimètres</small><strong>${sign}${s.mm}</strong></div><div class="unit-box dixieme"><small>Dixièmes</small><strong>${s.dixiemes}</strong></div><div class="unit-box centieme"><small>Centièmes</small><strong>${s.centiemes}</strong></div><div class="unit-box micron"><small>Microns</small><strong>${s.microns}</strong></div>`}
+function getCalc(){const rawMm=parseMm($('raw').value);const baseMm=parseMm($('base').value);const miniMm=parseMm($('mini').value);const maxiMm=parseMm($('maxi').value);const finishMm=parseMm($('finishAllowance').value)??0.5;const startMm=rawMm!==null?rawMm:baseMm;const rawUm=rawMm===null?null:mmToUm(rawMm);const baseUm=baseMm===null?null:mmToUm(baseMm);const startUm=startMm===null?null:mmToUm(startMm);const miniUm=miniMm===null?null:mmToUm(miniMm);const maxiUm=maxiMm===null?null:mmToUm(maxiMm);const averageUm=miniUm!==null&&maxiUm!==null?Math.round((miniUm+maxiUm)/2):null;const currentUm=startUm!==null?startUm-state.totalRemovedUm:null;const remainingUm=currentUm!==null&&averageUm!==null?currentUm-averageUm:null;const finishAllowanceUm=mmToUm(finishMm);const roughRemainingUm=remainingUm!==null?Math.max(0,remainingUm-finishAllowanceUm):null;const toleranceUm=miniUm!==null&&maxiUm!==null?maxiUm-miniUm:null;return{rawUm,baseUm,startUm,miniUm,maxiUm,averageUm,currentUm,remainingUm,finishAllowanceUm,roughRemainingUm,toleranceUm,measureType:$('measureType').value}}
+function syncStateFromInputs(){state.raw=$('raw').value;state.measureType=$('measureType').value;state.base=$('base').value;state.mini=$('mini').value;state.maxi=$('maxi').value;state.finishAllowance=$('finishAllowance').value}
+function save(){syncStateFromInputs();localStorage.setItem(STORAGE,JSON.stringify(state));queueCloudSave()}
+function queueCloudSave(){if(!currentUser||cloudLoading)return;clearTimeout(saveTimer);saveTimer=setTimeout(saveCloud,500)}
+async function saveCloud(){if(!currentUser||cloudLoading)return;try{await setDoc(doc(db,'tour_calculateur',currentUser.uid),{state,updatedAt:Date.now()});$('syncStatus').textContent='Synchronisé Google'}catch(e){$('syncStatus').textContent='Erreur synchro';console.error(e)}}
+async function loadCloud(){if(!currentUser)return;try{cloudLoading=true;const snap=await getDoc(doc(db,'tour_calculateur',currentUser.uid));if(snap.exists()&&snap.data().state){Object.assign(state,snap.data().state);localStorage.setItem(STORAGE,JSON.stringify(state));applyStateToInputs();render(false);toast('Données Google chargées.')}else{await setDoc(doc(db,'tour_calculateur',currentUser.uid),{state,updatedAt:Date.now()});$('syncStatus').textContent='Synchronisé Google'}}catch(e){$('syncStatus').textContent='Erreur chargement Google';console.error(e)}finally{cloudLoading=false}}
+function applyStateToInputs(){$('raw').value=state.raw||'';$('measureType').value=state.measureType||'diametre';$('base').value=state.base||'';$('mini').value=state.mini||'';$('maxi').value=state.maxi||'';$('finishAllowance').value=state.finishAllowance||'0.500';state.totalRemovedUm=Number(state.totalRemovedUm||0);state.passes=Array.isArray(state.passes)?state.passes:[]}
+function render(shouldSave=true){recalculatePasses();if(shouldSave)save();const c=getCalc();renderSplit($('remainingSplit'),c.roughRemainingUm??0);$('typeLabel').textContent=typeText(c.measureType);$('rawStart').textContent=fmtMm(c.rawUm);$('average').textContent=fmtMm(c.averageUm);$('current').textContent=fmtMm(c.currentUm);$('totalRemoved').textContent=fmtMm(state.totalRemovedUm);$('roughRemaining').textContent=fmtMm(c.roughRemainingUm);$('finishKept').textContent=fmtMm(c.finishAllowanceUm);$('tolerance').textContent=c.toleranceUm===null?'—':`${c.toleranceUm} µm`;const st=$('status');st.className='status';if(c.startUm===null||c.miniUm===null||c.maxiUm===null){st.textContent='En attente des cotes';$('explain').textContent='Renseigne la mesure du brut, la cote mini et la cote maxi.'}else if(c.miniUm>c.maxiUm){st.textContent='Mini supérieur au maxi';st.classList.add('bad');$('explain').textContent='La cote mini doit être plus petite que la cote maxi.'}else if(c.currentUm<c.miniUm){st.textContent='Sous cote';st.classList.add('bad');$('explain').textContent=`Stop : tu es sous la cote mini de ${fmtMm(Math.abs(c.currentUm-c.miniUm))}.`}else if(c.currentUm>=c.miniUm&&c.currentUm<=c.maxiUm){st.textContent='Dans la tolérance';st.classList.add('ok');$('explain').textContent=c.remainingUm===0?'Parfait : tu es exactement à la cote moyenne.':`Tu es dans la tolérance. Reste total jusqu’à la moyenne : ${fmtMm(c.remainingUm)}.`}else if(c.roughRemainingUm>0){st.textContent='Ébauche avant finition';st.classList.add('warn');$('explain').textContent=`Retire maintenant ${fmtMm(c.roughRemainingUm)}. Tu gardes ${fmtMm(c.finishAllowanceUm)} pour la finition. Reste total jusqu’à la moyenne : ${fmtMm(c.remainingUm)}.`}else{st.textContent='Finition uniquement';st.classList.add('warn');$('explain').textContent=`Ne fais plus d’ébauche : il reste ${fmtMm(c.remainingUm)} au total, dont ${fmtMm(c.finishAllowanceUm)} prévu pour la finition.`}renderHistory()}
+function validatePass(){const removedMm=parseMm($('removed').value);if(removedMm===null||removedMm<=0){toast('Entre une matière retirée valide.');return}const removedUm=mmToUm(removedMm);state.passes.unshift({time:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),removedUm,currentUm:null,remainingUm:null,roughRemainingUm:null});recalculatePasses();$('removed').value='';save();render(false);toast('Passe validée et enregistrée.')}
+function getCalcAfterTotal(total){const rawMm=parseMm($('raw').value);const baseMm=parseMm($('base').value);const miniMm=parseMm($('mini').value);const maxiMm=parseMm($('maxi').value);const finishMm=parseMm($('finishAllowance').value)??0.5;const startMm=rawMm!==null?rawMm:baseMm;const startUm=startMm===null?null:mmToUm(startMm);const miniUm=miniMm===null?null:mmToUm(miniMm);const maxiUm=maxiMm===null?null:mmToUm(maxiMm);const averageUm=miniUm!==null&&maxiUm!==null?Math.round((miniUm+maxiUm)/2):null;const currentUm=startUm!==null?startUm-total:null;const remainingUm=currentUm!==null&&averageUm!==null?currentUm-averageUm:null;const finishAllowanceUm=mmToUm(finishMm);const roughRemainingUm=remainingUm!==null?Math.max(0,remainingUm-finishAllowanceUm):null;return{currentUm,remainingUm,roughRemainingUm}}
+function recalculatePasses(){let runningTotal=0;const chronological=[...state.passes].reverse();chronological.forEach(p=>{runningTotal+=Number(p.removedUm||0);const calc=getCalcAfterTotal(runningTotal);p.currentUm=calc.currentUm;p.remainingUm=calc.remainingUm;p.roughRemainingUm=calc.roughRemainingUm});state.passes=chronological.reverse();state.totalRemovedUm=state.passes.reduce((sum,p)=>sum+Number(p.removedUm||0),0)}
+function renderHistory(){const box=$('history');if(!state.passes.length){box.innerHTML='<div class="empty">Aucune passe validée pour cette pièce.</div>';return}const c=getCalc();box.innerHTML=state.passes.map((p,i)=>{let cls='warn',txt='À continuer';if(p.currentUm!==null&&c.miniUm!==null&&c.maxiUm!==null){if(p.currentUm<c.miniUm){cls='bad';txt='Sous cote'}else if(p.currentUm<=c.maxiUm){cls='ok';txt='Tolérance'}}return`<div class="line"><time>${p.time}</time><div><strong>Passe ${state.passes.length-i} : -${fmtMm(p.removedUm)}</strong><p>Cote actuelle : ${fmtMm(p.currentUm)} · Avant finition : ${fmtMm(p.roughRemainingUm)} · Reste total : ${fmtMm(p.remainingUm)}</p></div><span class="tag ${cls}">${txt}</span><button class="edit-pass" data-index="${i}">Modifier</button></div>`}).join('');box.querySelectorAll('.edit-pass').forEach(btn=>btn.addEventListener('click',()=>editPass(Number(btn.dataset.index))))}
+function editPass(index){const p=state.passes[index];if(!p)return;const oldValue=(p.removedUm/1000).toFixed(3);const value=prompt('Nouvelle valeur retirée pour cette passe en mm :',oldValue);if(value===null)return;const newMm=parseMm(value);if(newMm===null||newMm<=0){toast('Valeur incorrecte.');return}p.removedUm=mmToUm(newMm);p.time=p.time+' modif.';recalculatePasses();save();render(false);toast('Passe modifiée et recalculée.')}
+function undoPass(){const last=state.passes.shift();if(!last){toast('Aucune passe à annuler.');return}state.totalRemovedUm=Math.max(0,state.totalRemovedUm-last.removedUm);save();render(false);toast('Dernière passe annulée.')}
+function resetPiece(){state.totalRemovedUm=0;state.passes=[];$('removed').value='';save();render(false);toast('Nouvelle pièce prête.')}
+function clearAll(){if(!confirm('Tout effacer ?'))return;Object.assign(state,{raw:'',measureType:'diametre',base:'',mini:'',maxi:'',finishAllowance:'0.500',totalRemovedUm:0,passes:[]});applyStateToInputs();$('removed').value='';save();render(false);toast('Tout a été effacé.')}
+function copyResult(){const c=getCalc();const text=['Calcul de cote — tour manuel',`Type : ${typeText(c.measureType)}`,`Brut : ${fmtMm(c.rawUm)}`,`Cote nominale : ${fmtMm(c.baseUm)}`,`Mini : ${fmtMm(c.miniUm)}`,`Maxi : ${fmtMm(c.maxiUm)}`,`Moyenne : ${fmtMm(c.averageUm)}`,`Cote actuelle : ${fmtMm(c.currentUm)}`,`Total retiré : ${fmtMm(state.totalRemovedUm)}`,`À retirer avant finition : ${fmtMm(c.roughRemainingUm)}`,`Finition gardée : ${fmtMm(c.finishAllowanceUm)}`,`Reste total : ${fmtMm(c.remainingUm)}`].join('\n');navigator.clipboard.writeText(text);toast('Résultat copié.')}
+let toastTimer;function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2200)}
+function loadLocal(){try{const saved=JSON.parse(localStorage.getItem(STORAGE)||'{}');Object.assign(state,saved);applyStateToInputs()}catch(e){}}
+async function googleAuth(){if(currentUser){await signOut(auth);return}await signInWithPopup(auth,new GoogleAuthProvider())}
 
-function parse(v){return Number(String(v).replace(',','.'))||0}
+['raw','base','mini','maxi','finishAllowance'].forEach(id=>$(id).addEventListener('input',()=>render(true)));
+$('measureType').addEventListener('change',()=>render(true));$('validatePass').addEventListener('click',validatePass);$('removed').addEventListener('keydown',e=>{if(e.key==='Enter')validatePass()});$('undoPass').addEventListener('click',undoPass);$('resetPiece').addEventListener('click',resetPiece);$('clearAll').addEventListener('click',clearAll);$('copyResult').addEventListener('click',copyResult);$('googleLogin').addEventListener('click',googleAuth);
 
-function calc(){
-  const raw = parse(document.getElementById('raw').value);
-  const mini = parse(document.getElementById('mini').value);
-  const maxi = parse(document.getElementById('maxi').value);
-  const finish = parse(document.getElementById('finish').value);
-
-  if(!raw||!mini||!maxi) return;
-
-  const avg = (mini+maxi)/2;
-  const current = raw - totalRemoved;
-  const remaining = current - avg;
-  const rough = Math.max(0, remaining - finish);
-
-  document.getElementById('result').innerText =
-`Actuel: ${current.toFixed(3)} mm
-Moyenne: ${avg.toFixed(3)} mm
-A enlever (avant finition): ${rough.toFixed(3)} mm
-Finition gardée: ${finish.toFixed(3)} mm`;
-
-  save();
-}
-
-window.addPass = function(){
-  const r = parse(document.getElementById('remove').value);
-  if(!r) return;
-  totalRemoved += r;
-  document.getElementById('remove').value='';
-  calc();
-}
-
-async function save(){
-  if(!user) return;
-  await setDoc(doc(db,"users",user.uid),{
-    raw: document.getElementById('raw').value,
-    mini: document.getElementById('mini').value,
-    maxi: document.getElementById('maxi').value,
-    finish: document.getElementById('finish').value,
-    totalRemoved
-  });
-}
-
-async function load(){
-  if(!user) return;
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(snap.exists()){
-    const d = snap.data();
-    document.getElementById('raw').value = d.raw;
-    document.getElementById('mini').value = d.mini;
-    document.getElementById('maxi').value = d.maxi;
-    document.getElementById('finish').value = d.finish;
-    totalRemoved = d.totalRemoved||0;
-    calc();
-  }
-}
-
-window.login = async function(){
-  if(user){
-    await signOut(auth);
-    return;
-  }
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
-}
-
-onAuthStateChanged(auth, async(u)=>{
-  user=u;
-  document.getElementById('loginBtn').innerText = user ? "Déconnexion" : "Connexion Google";
-  if(user) await load();
-});
-
-['raw','mini','maxi','finish'].forEach(id=>{
-  document.getElementById(id).addEventListener('input',calc);
-});
-
+onAuthStateChanged(auth,async user=>{currentUser=user;if(user){$('googleLogin').textContent='Déconnexion';$('syncStatus').textContent='Connecté : '+(user.displayName||user.email);await loadCloud()}else{$('googleLogin').textContent='Connexion Google';$('syncStatus').textContent='Local uniquement'}});
+loadLocal();render(false);
 </script>
 </body>
 </html>
