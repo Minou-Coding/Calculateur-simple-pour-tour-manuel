@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculateur Tour</title>
+<style>
+body{background:#05070b;color:#fff;font-family:sans-serif;margin:0;padding:20px}
+input,button,select{width:100%;padding:10px;margin-top:8px;background:#111;border:1px solid #333;color:#fff;border-radius:8px}
+button{cursor:pointer}
+.row{margin-bottom:15px}
+#result{font-size:22px;margin-top:20px}
+</style>
+</head>
+<body>
+<h2>Calculateur Tour</h2>
+
+<div class="row">
+<label>Brut (mm)</label>
+<input id="raw">
+</div>
+
+<div class="row">
+<label>Mini</label>
+<input id="mini">
+</div>
+
+<div class="row">
+<label>Maxi</label>
+<input id="maxi">
+</div>
+
+<div class="row">
+<label>Finition (mm)</label>
+<input id="finish" value="0.500">
+</div>
+
+<div class="row">
+<label>Matière retirée</label>
+<input id="remove">
+<button onclick="addPass()">Valider</button>
+</div>
+
+<button onclick="login()" id="loginBtn">Connexion Google</button>
+
+<div id="result"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCtMc5t1O3KjYafh30qaao5tnYgh8vUBBE",
+  authDomain: "calculateur-tour.firebaseapp.com",
+  projectId: "calculateur-tour",
+  storageBucket: "calculateur-tour.firebasestorage.app",
+  messagingSenderId: "1009618650506",
+  appId: "1:1009618650506:web:6900d30394e5efca4af473"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let user = null;
+let totalRemoved = 0;
+
+function parse(v){return Number(String(v).replace(',','.'))||0}
+
+function calc(){
+  const raw = parse(document.getElementById('raw').value);
+  const mini = parse(document.getElementById('mini').value);
+  const maxi = parse(document.getElementById('maxi').value);
+  const finish = parse(document.getElementById('finish').value);
+
+  if(!raw||!mini||!maxi) return;
+
+  const avg = (mini+maxi)/2;
+  const current = raw - totalRemoved;
+  const remaining = current - avg;
+  const rough = Math.max(0, remaining - finish);
+
+  document.getElementById('result').innerText =
+`Actuel: ${current.toFixed(3)} mm
+Moyenne: ${avg.toFixed(3)} mm
+A enlever (avant finition): ${rough.toFixed(3)} mm
+Finition gardée: ${finish.toFixed(3)} mm`;
+
+  save();
+}
+
+window.addPass = function(){
+  const r = parse(document.getElementById('remove').value);
+  if(!r) return;
+  totalRemoved += r;
+  document.getElementById('remove').value='';
+  calc();
+}
+
+async function save(){
+  if(!user) return;
+  await setDoc(doc(db,"users",user.uid),{
+    raw: document.getElementById('raw').value,
+    mini: document.getElementById('mini').value,
+    maxi: document.getElementById('maxi').value,
+    finish: document.getElementById('finish').value,
+    totalRemoved
+  });
+}
+
+async function load(){
+  if(!user) return;
+  const snap = await getDoc(doc(db,"users",user.uid));
+  if(snap.exists()){
+    const d = snap.data();
+    document.getElementById('raw').value = d.raw;
+    document.getElementById('mini').value = d.mini;
+    document.getElementById('maxi').value = d.maxi;
+    document.getElementById('finish').value = d.finish;
+    totalRemoved = d.totalRemoved||0;
+    calc();
+  }
+}
+
+window.login = async function(){
+  if(user){
+    await signOut(auth);
+    return;
+  }
+  const provider = new GoogleAuthProvider();
+  await signInWithPopup(auth, provider);
+}
+
+onAuthStateChanged(auth, async(u)=>{
+  user=u;
+  document.getElementById('loginBtn').innerText = user ? "Déconnexion" : "Connexion Google";
+  if(user) await load();
+});
+
+['raw','mini','maxi','finish'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',calc);
+});
+
+</script>
+</body>
+</html>
