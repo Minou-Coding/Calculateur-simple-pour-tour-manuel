@@ -33,7 +33,26 @@
 <div class="result"><div id="status" class="status">En attente des cotes</div><div class="big-label" id="mainResultLabel">À retirer maintenant avant finition</div><div class="split-number" id="remainingSplit"></div><p class="explain" id="explain">Renseigne la mesure du brut, la cote mini et la cote maxi.</p></div>
 <div class="stats"><div class="mini"><span>Pièce</span><strong id="pieceLabel">—</strong></div><div class="mini"><span>Partie</span><strong id="partLabel">—</strong></div><div class="mini"><span>Type</span><strong id="typeLabel">—</strong></div><div class="mini"><span>Brut départ</span><strong id="rawStart">—</strong></div><div class="mini"><span>Cote moyenne</span><strong id="average">—</strong></div><div class="mini"><span>Cote actuelle</span><strong id="current">—</strong></div><div class="mini"><span>Total retiré</span><strong id="totalRemoved">—</strong></div><div class="mini"><span>Avant finition</span><strong id="roughRemaining">—</strong></div><div class="mini"><span>Finition gardée</span><strong id="finishKept">—</strong></div><div class="mini"><span>Tolérance</span><strong id="tolerance">—</strong></div></div>
 <div class="card"><div class="card-head" id="historyToggle" style="cursor:pointer"><h2><span id="historyArrow">▸</span> Historique des pièces</h2><span class="help" id="syncStatus">Local uniquement</span></div><div class="card-body hidden" id="historyBody"><div class="history" id="history"></div></div></div>
-</section></section></main>
+</section></section>
+
+<section class="card" style="margin-top:16px">
+  <div class="card-head"><h2>Calculateur vitesse / avance</h2><span class="help">Pour régler rapidement le tour selon la pièce</span></div>
+  <div class="card-body">
+    <div class="form" style="grid-template-columns:repeat(4,1fr);align-items:end">
+      <label>Diamètre pièce / outil en mm<span class="help">Exemple : 52</span><input id="cutDiameter" inputmode="decimal" placeholder="52.000"></label>
+      <label>Vitesse de coupe Vc en m/min<span class="help">Exemple : 120</span><input id="cutSpeed" inputmode="decimal" placeholder="120"></label>
+      <label>Avance par tour en mm/tr<span class="help">Exemple : 0.12</span><input id="feedPerRev" inputmode="decimal" placeholder="0.120"></label>
+      <label>Longueur à usiner en mm<span class="help">Optionnel pour le temps</span><input id="cutLength" inputmode="decimal" placeholder="80"></label>
+    </div>
+    <div class="stats" style="margin-top:16px;margin-bottom:0">
+      <div class="mini"><span>Vitesse broche</span><strong id="rpmResult">—</strong></div>
+      <div class="mini"><span>Avance machine</span><strong id="feedResult">—</strong></div>
+      <div class="mini"><span>Temps estimé</span><strong id="timeResult">—</strong></div>
+      <div class="mini"><span>Formule</span><strong id="formulaResult">—</strong></div>
+    </div>
+  </div>
+</section>
+</main>
 
 <div class="modal-backdrop" id="passModalBackdrop"><div class="modal"><div class="modal-head"><h3 id="modalTitle">Modifier la passe</h3><button class="ghost" id="closePassModal">Fermer</button></div><div class="modal-body"><label>Valeur retirée sur cette passe en mm<span class="help">Modifie si la valeur de passe était incorrecte.</span><input id="modalRemoved" inputmode="decimal"></label><label>Mesure manuelle après cette passe en mm<span class="help">Laisse vide si aucune mesure.</span><input id="modalManualMeasure" inputmode="decimal"></label><label>Outil de mesure utilisé<span class="help">Choisis l’outil utilisé.</span><select id="modalMeasureTool"><option value="">Non précisé</option><option value="pied_coulisse">Pied à coulisse</option><option value="micrometre">Micromètre</option><option value="pied_profondeur">Pied à coulisse profondeur</option><option value="alesometre">Alésomètre</option><option value="autre">Autre</option></select></label><label id="modalOtherToolWrap" class="hidden">Nom de l’outil<span class="help">Exemple : comparateur, colonne de mesure...</span><input id="modalOtherTool"></label><div class="modal-actions"><button class="primary" id="savePassModal">Enregistrer</button><button class="danger" id="deletePassModal">Supprimer la passe</button></div></div></div></div>
 <div class="modal-backdrop" id="nameModalBackdrop"><div class="modal"><div class="modal-head"><h3 id="nameModalTitle">Renommer</h3><button class="ghost" id="closeNameModal">Fermer</button></div><div class="modal-body"><label>Nouveau nom<span class="help">Nom de la pièce ou de la partie.</span><input id="nameModalInput" placeholder="Nom"></label>
@@ -105,7 +124,9 @@ function newPart(){openNameModal('part','create')}
 function deletePart(){const pc=currentPiece();if(pc.parts.length<=1){toast('Impossible : garde au moins une partie.');return}if(!confirm('Supprimer cette partie ?'))return;pc.parts=pc.parts.filter(p=>p.id!==pc.currentPartId);pc.currentPartId=pc.parts[0].id;applyPartToInputs();save();render(false);toast('Partie supprimée.')}
 function undoPass(){const pt=currentPart();const last=pt.passes.shift();if(!last){toast('Aucune passe à annuler.');return}recalculatePasses();save();render(false);toast('Dernière passe annulée.')}
 function clearPart(){if(!confirm('Effacer toutes les données de cette partie ?'))return;const pt=currentPart();Object.assign(pt,{raw:'',measureType:'diametre',base:'',mini:'',maxi:'',finishAllowance:'0.500',totalRemovedUm:0,passes:[]});applyPartToInputs();save();render(false);toast('Partie effacée.')}
-function copyResult(){const pc=currentPiece(),pt=currentPart(),c=getCalc();navigator.clipboard.writeText(['Calcul tour manuel',`Pièce : ${pc.name}`,`Partie : ${pt.name}`,`Type : ${typeText(c.measureType)}`,`Brut : ${fmtMm(c.rawUm)}`,`Mini : ${fmtMm(c.miniUm)}`,`Maxi : ${fmtMm(c.maxiUm)}`,`Moyenne : ${fmtMm(c.averageUm)}`,`Cote actuelle : ${fmtMm(c.currentUm)}`,`Avant finition : ${fmtMm(c.roughRemainingUm)}`].join('\n'));toast('Résultat copié.')}
+function copyResult(){const pc=currentPiece(),pt=currentPart(),c=getCalc();navigator.clipboard.writeText(['Calcul tour manuel',`Pièce : ${pc.name}`,`Partie : ${pt.name}`,`Type : ${typeText(c.measureType)}`,`Brut : ${fmtMm(c.rawUm)}`,`Mini : ${fmtMm(c.miniUm)}`,`Maxi : ${fmtMm(c.maxiUm)}`,`Moyenne : ${fmtMm(c.averageUm)}`,`Cote actuelle : ${fmtMm(c.currentUm)}`,`Avant finition : ${fmtMm(c.roughRemainingUm)}`].join('
+'));toast('Résultat copié.')}
+function calcCutting(){const d=parseMm($('cutDiameter')?.value),vc=parseMm($('cutSpeed')?.value),f=parseMm($('feedPerRev')?.value),l=parseMm($('cutLength')?.value);let rpm=null,feed=null,time=null;if(d&&vc){rpm=(1000*vc)/(Math.PI*d)}if(rpm&&f){feed=rpm*f}if(feed&&l){time=l/feed}$('rpmResult').textContent=rpm?`${Math.round(rpm)} tr/min`:'—';$('feedResult').textContent=feed?`${feed.toFixed(1)} mm/min`:'—';$('timeResult').textContent=time?`${Math.floor(time)} min ${Math.round((time%1)*60)} s`:'—';$('formulaResult').textContent='N = 1000×Vc / π×D'}
 
 let toastTimer;function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2200)}
 function loadLocal(){try{const saved=JSON.parse(localStorage.getItem(STORAGE)||'{}');Object.assign(state,saved);ensureState();applyPartToInputs()}catch(e){ensureState();applyPartToInputs()}}
@@ -129,6 +150,7 @@ function setupPWA(){
 }
 
 ['raw','base','mini','maxi','finishAllowance'].forEach(id=>{const el=$(id);if(el)el.addEventListener('input',()=>render(true))});
+['cutDiameter','cutSpeed','feedPerRev','cutLength'].forEach(id=>{const el=$(id);if(el)el.addEventListener('input',calcCutting)});
 
 $('newPiece').addEventListener('click',newPiece);
 $('deletePiece').addEventListener('click',deletePiece);
@@ -154,7 +176,7 @@ $('nameModalBackdrop').addEventListener('click',e=>{if(e.target.id==='nameModalB
 
 onAuthStateChanged(auth,async user=>{currentUser=user;if(user){$('googleLogin').textContent='Déconnexion';$('syncStatus').textContent='Connecté : '+(user.displayName||user.email);await loadCloud()}else{if(cloudUnsubscribe){cloudUnsubscribe();cloudUnsubscribe=null}$('googleLogin').textContent='Connexion Google';$('syncStatus').textContent='Local uniquement'}});
 setupPWA();
-loadLocal();render(false);
+loadLocal();render(false);calcCutting();
 </script>
 </body>
 </html>
