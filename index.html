@@ -15,7 +15,7 @@
 </head>
 <body>
 <main class="app">
-<section class="top"><h1>Calculateur simple pour tour manuel</h1><p>Chaque pièce est sauvegardée. Dans une pièce, tu peux créer plusieurs parties : diamètre, alésage, longueur ou autre. Chaque partie garde ses propres passes, mesures et réglages.</p></section>
+<section class="top"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap"><img src="https://i.ibb.co/vvq7MNfb/5ec6dfb2da47.png" style="width:60px;height:60px;border-radius:12px"><div><h1 style="margin:0">TourMate</h1><div style="font-size:12px;color:#8ea0b8;font-weight:600">Par PrimeSyntax</div></div></div><p>Chaque pièce est sauvegardée. Dans une pièce, tu peux créer plusieurs parties : diamètre, alésage, longueur ou autre. Chaque partie garde ses propres passes, mesures et réglages.</p></section>
 <section class="grid">
 <aside class="card"><div class="card-head"><h2>Réglage</h2><button class="ghost" id="installApp">Installer l’app</button><button class="ghost" id="googleLogin">Connexion Google</button></div><div class="card-body"><div class="form">
 <div class="btns"><button class="primary" id="newPiece">Nouvelle pièce</button><button class="danger" id="deletePiece">Supprimer pièce</button></div>
@@ -48,13 +48,13 @@ const firebaseConfig={apiKey:"AIzaSyCtMc5t1O3KjYafh30qaao5tnYgh8vUBBE",authDomai
 const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
 const $=id=>document.getElementById(id),STORAGE='tour-pieces-parts-v2';
 let currentUser=null,cloudLoading=false,cloudUnsubscribe=null,activePassIndex=null,renameTarget=null,pendingCreate=null,deferredInstallPrompt=null;
-const uiState={openPieces:{},openParts:{}};
+const uiState={openPieces:{},openParts:{},initialized:false};
 const state={currentPieceId:null,pieces:[]};
 
 const blankPart=()=>({id:crypto.randomUUID(),name:'Nouvelle partie',raw:'',measureType:'diametre',base:'',mini:'',maxi:'',finishAllowance:'0.500',totalRemovedUm:0,passes:[]});
 const blankPiece=()=>{const part=blankPart();return{id:crypto.randomUUID(),name:'Nouvelle pièce',currentPartId:part.id,parts:[part]}};
 
-function ensureState(){if(!Array.isArray(state.pieces))state.pieces=[];if(!state.pieces.length){const p=blankPiece();state.pieces=[p];state.currentPieceId=p.id;uiState.openPieces[p.id]=true;uiState.openParts[p.currentPartId]=true}if(!currentPiece())state.currentPieceId=state.pieces[0].id;const pc=currentPiece();if(!Array.isArray(pc.parts)||!pc.parts.length){const pt=blankPart();pc.parts=[pt];pc.currentPartId=pt.id;uiState.openParts[pt.id]=true}if(!currentPart())pc.currentPartId=pc.parts[0].id}
+function ensureState(){if(!Array.isArray(state.pieces))state.pieces=[];if(!state.pieces.length){const p=blankPiece();state.pieces=[p];state.currentPieceId=p.id}if(!currentPiece())state.currentPieceId=state.pieces[0].id;const pc=currentPiece();if(!Array.isArray(pc.parts)||!pc.parts.length){const pt=blankPart();pc.parts=[pt];pc.currentPartId=pt.id}if(!currentPart())pc.currentPartId=pc.parts[0].id;if(!uiState.initialized){state.pieces.forEach(piece=>{uiState.openPieces[piece.id]=false;(piece.parts||[]).forEach(part=>uiState.openParts[part.id]=false)});uiState.initialized=true}}
 function currentPiece(){return state.pieces.find(p=>p.id===state.currentPieceId)}
 function currentPart(){const p=currentPiece();return p?p.parts.find(x=>x.id===p.currentPartId):null}
 function parseMm(v){const s=String(v??'').trim().replace(/\s/g,'').replace(',','.');if(!s)return null;const n=Number(s);return Number.isFinite(n)?n:null}
@@ -89,7 +89,7 @@ function deletePassModal(){if(activePassIndex===null)return;if(!confirm('Supprim
 
 function openNameModal(type,mode='rename'){renameTarget=type;pendingCreate=mode==='create'?type:null;$('nameModalTitle').textContent=mode==='create'?(type==='piece'?'Nom de la nouvelle pièce':'Nom de la nouvelle partie'):(type==='piece'?'Renommer la pièce':'Renommer la partie');$('nameModalInput').value=mode==='create'?'':(type==='piece'?(currentPiece().name||''):(currentPart().name||''));$('nameModalBackdrop').classList.add('show');setTimeout(()=>$('nameModalInput').focus(),50)}
 function closeNameModal(){$('nameModalBackdrop').classList.remove('show');renameTarget=null;pendingCreate=null}
-function saveNameModal(){const name=$('nameModalInput').value.trim();if(!name){toast('Entre un nom.');return}if(pendingCreate==='piece'){syncPartFromInputs();const p=blankPiece();p.name=name;p.parts[0].name='Partie 1';state.pieces.push(p);state.currentPieceId=p.id;uiState.openPieces[p.id]=true;uiState.openParts[p.currentPartId]=true;applyPartToInputs();save();render(false);closeNameModal();toast('Nouvelle pièce créée.');return}if(pendingCreate==='part'){syncPartFromInputs();const pc=currentPiece(),pt=blankPart();pt.name=name;pc.parts.push(pt);pc.currentPartId=pt.id;uiState.openPieces[pc.id]=true;uiState.openParts[pt.id]=true;applyPartToInputs();save();render(false);closeNameModal();toast('Nouvelle partie ajoutée.');return}if(renameTarget==='piece')currentPiece().name=name;if(renameTarget==='part')currentPart().name=name;applyPartToInputs();save();render(false);closeNameModal();toast('Nom modifié.')}
+function saveNameModal(){const name=$('nameModalInput').value.trim();if(!name){toast('Entre un nom.');return}if(pendingCreate==='piece'){syncPartFromInputs();const p=blankPiece();p.name=name;p.parts[0].name='Partie 1';state.pieces.push(p);state.currentPieceId=p.id;uiState.openPieces[p.id]=false;uiState.openParts[p.currentPartId]=false;applyPartToInputs();save();render(false);closeNameModal();toast('Nouvelle pièce créée.');return}if(pendingCreate==='part'){syncPartFromInputs();const pc=currentPiece(),pt=blankPart();pt.name=name;pc.parts.push(pt);pc.currentPartId=pt.id;uiState.openPieces[pc.id]=true;uiState.openParts[pt.id]=false;applyPartToInputs();save();render(false);closeNameModal();toast('Nouvelle partie ajoutée.');return}if(renameTarget==='piece')currentPiece().name=name;if(renameTarget==='part')currentPart().name=name;applyPartToInputs();save();render(false);closeNameModal();toast('Nom modifié.')}
 
 function newPiece(){openNameModal('piece','create')}
 function deletePiece(){if(state.pieces.length<=1){toast('Impossible : garde au moins une pièce.');return}if(!confirm('Supprimer cette pièce ?'))return;state.pieces=state.pieces.filter(p=>p.id!==state.currentPieceId);state.currentPieceId=state.pieces[0].id;applyPartToInputs();save();render(false);toast('Pièce supprimée.')}
