@@ -13,11 +13,7 @@
 <section class="top"><h1>Calculateur simple pour tour manuel</h1><p>Chaque pièce est sauvegardée. Dans une pièce, tu peux créer plusieurs parties : diamètre, alésage, longueur ou autre. Chaque partie garde ses propres passes, mesures et réglages.</p></section>
 <section class="grid">
 <aside class="card"><div class="card-head"><h2>Réglage</h2><button class="ghost" id="googleLogin">Connexion Google</button></div><div class="card-body"><div class="form">
-<label>Pièce active<span class="help">Sélectionne une pièce sauvegardée.</span><select id="pieceSelect"></select></label>
-<label>Nom de la pièce<span class="help">Exemple : Axe moteur, bague, entretoise...</span><input id="pieceName" placeholder="Nom de la pièce"></label>
 <div class="btns"><button class="primary" id="newPiece">Nouvelle pièce</button><button class="danger" id="deletePiece">Supprimer pièce</button></div>
-<label>Partie active<span class="help">Une pièce peut contenir plusieurs diamètres, alésages, longueurs...</span><select id="partSelect"></select></label>
-<label>Nom de la partie<span class="help">Exemple : Ø portée roulement, Alésage central...</span><input id="partName" placeholder="Nom de la partie"></label>
 <div class="btns"><button class="primary" id="newPart">Ajouter une partie</button><button class="danger" id="deletePart">Supprimer partie</button></div>
 <label>Mesure du brut avant usinage en mm<span class="help">Vraie cote de départ pour cette partie.</span><input id="raw" inputmode="decimal" placeholder="60.000"></label>
 <label>Type de cote<span class="help">Sélectionne le type de mesure.</span><select id="measureType"><option value="diametre">Diamètre extérieur</option><option value="alesage">Alésage / intérieur</option><option value="longueur">Longueur / épaulement</option><option value="autre">Autre cote</option></select></label>
